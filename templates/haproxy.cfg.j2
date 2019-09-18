@@ -1,0 +1,111 @@
+{{ ansible_managed | comment }}
+
+# Global Settings
+# The global settings configure parameters that apply to all servers running
+# HAProxy.
+
+global
+  user  {{ wtd_srv_haproxy_conf_global.user | default('haproxy') }}
+  group {{ wtd_srv_haproxy_conf_global.group | default('haproxy') }}
+  chroot {{ wtd_srv_haproxy_conf_global.chroot | default('/var/lib/haproxy') }}
+  pidfile {{ wtd_srv_haproxy_conf_global.pidfile | default('/var/run/haproxy.pid') }}
+
+  log {{ wtd_srv_haproxy_conf_global.log | default('127.0.0.1 local2') }}
+
+  maxconn {{ wtd_srv_haproxy_conf_global.maxconn | default('4000') }}
+
+{% if wtd_srv_haproxy_conf_global.daemon | default('true') | bool %}
+  daemon
+{% endif %}
+
+# Default Settings
+# The default settings configure parameters that apply to all proxy subsections
+# in a configuration (frontend, backend, and listen).
+
+defaults
+  mode {{ wtd_srv_haproxy_conf_defaults.mode | default('http') }}
+
+  log {{ wtd_srv_haproxy_conf_defaults.log | default('global') }}
+
+{% for option in wtd_srv_haproxy_conf_defaults.options | default(['httplog', 'dontlognull', 'forwardfor except 127.0.0.0/8', 'redispatch']) %}
+  option {{ option }}
+{% endfor %}
+
+  maxconn {{ wtd_srv_haproxy_conf_defaults.maxconn | default('3000') }}
+  retries {{ wtd_srv_haproxy_conf_defaults.retries | default('3') }}
+
+  timeout http-request {{ wtd_srv_haproxy_conf_defaults.timeout_http_request | default('10s') }}
+  timeout http-keep-alive {{ wtd_srv_haproxy_conf_defaults.timeout_http_keep_alive | default('10s') }}
+  timeout connect {{ wtd_srv_haproxy_conf_defaults.timeout_connect | default('10s') }}
+  timeout queue {{ wtd_srv_haproxy_conf_defaults.timeout_queue | default('60s') }}
+  timeout client {{ wtd_srv_haproxy_conf_defaults.timeout_client | default('60s') }}
+  timeout server {{ wtd_srv_haproxy_conf_defaults.timeout_server | default('60s') }}
+  timeout check {{ wtd_srv_haproxy_conf_defaults.timeout_check | default('10s') }}
+
+{% if wtd_srv_haproxy_conf_stats.enabled | default('false') | bool %}
+# Stats Settings
+# The stats settings configure the statistics page for monitoring purposes.
+
+listen stats
+  stats enable
+  bind {{ wtd_srv_haproxy_conf_stats.bind_address | default('*') }}:{{ wtd_srv_haproxy_conf_stats.bind_port | default('8080') }}
+  stats uri {{ wtd_srv_haproxy_conf_stats.uri | default('/haproxy?stats') }}
+  stats auth {{ wtd_srv_haproxy_conf_stats.auth | mandatory }}
+{% if wtd_srv_haproxy_conf_stats.admin | default('false') | bool %}
+  stats admin if TRUE
+{% endif %}
+  stats refresh {{ wtd_srv_haproxy_conf_stats.refresh | default('30s') }}
+{% if wtd_srv_haproxy_conf_stats.hide_version | default('true') | bool %}
+  stats hide-version
+{% endif %}
+{% if wtd_srv_haproxy_conf_stats.show_legends | default('false') | bool %}
+  stats show-legends
+{% endif %}
+{% if wtd_srv_haproxy_conf_stats.realm is defined %}
+  stats realm {{ wtd_srv_haproxy_conf_stats.realm }}
+{% endif %}
+{% if wtd_srv_haproxy_conf_stats.show_desc is defined %}
+  stats show-desc {{ wtd_srv_haproxy_conf_stats.show_desc }}
+{% endif %}
+
+{% endif %}
+{% if wtd_srv_haproxy_conf_frontends is defined %}
+# Frontend Settings
+# The frontend settings configure the servers' listening sockets for client
+# connection requests.
+
+{% for frontend in wtd_srv_haproxy_conf_frontends %}
+frontend {{ frontend.name }}
+  bind {{ frontend.bind_address }}:{{ frontend.bind_port }}
+  default_backend {{ frontend.default_backend }}
+
+{% endfor %}
+{% endif %}
+{% if wtd_srv_haproxy_conf_backends is defined %}
+# Backend Settings
+# The backend settings specify the real server IP addresses as well as the
+# load balancer scheduling algorithm.
+
+{% for backend in wtd_srv_haproxy_conf_backends %}
+backend {{ backend.name }}
+  balance {{ backend.balance | default('roundrobin') }}
+{% for server in backend.servers %}
+  server {{ server.name }} {{ server.address }}:{{ server.port }} {{ server.options | default('check weight 1') }}
+{% endfor %}
+
+{% endfor %}
+{% endif %}
+{% if wtd_srv_haproxy_conf_listens is defined %}
+# Listen Settings
+# The Listen settings configure a complete proxy (combination of frontend and
+# backend).
+
+{% for listen in wtd_srv_haproxy_conf_listens %}
+frontend {{ listen.name }}
+  bind {{ listen.bind_address }}:{{ listen.bind_port }}
+  balance {{ listen.balance | default('roundrobin') }}
+{% for server in listen.servers %}
+  server {{ server.name }} {{ server.address }}:{{ server.port }} {{ server.options | default('check weight 1') }}
+{% endfor %}
+{% endfor %}
+{% endif %}

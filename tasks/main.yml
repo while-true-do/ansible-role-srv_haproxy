@@ -1,0 +1,92 @@
+---
+# tasks file for while_true_do.srv_haproxy
+
+- name: Manage haproxy Packages
+  package:
+    name: "{{ wtd_srv_haproxy_package }}"
+    state: "{{ wtd_srv_haproxy_package_state }}"
+  become: true
+  tags:
+    - haproxy
+    - package
+
+- name: Manage haproxy Configuration
+  template:
+    src: "haproxy.cfg.j2"
+    dest: "/etc/haproxy/haproxy.cfg"
+    validate: "/usr/sbin/haproxy -c -f %s"
+  become: true
+  notify:
+    - Restart haproxy
+  when:
+    - wtd_srv_haproxy_package_state != "absent"
+  tags:
+    - haproxy
+    - configuration
+
+- name: Manage haproxy Service
+  service:
+    name: "{{ wtd_srv_haproxy_service }}"
+    state: "{{ wtd_srv_haproxy_service_state }}"
+    enabled: "{{ wtd_srv_haproxy_service_enabled }}"
+  become: true
+  when:
+    - wtd_srv_haproxy_package_state != "absent"
+  tags:
+    - haproxy
+    - service
+
+- name: Manage haproxy stats FW Port
+  firewalld:
+    port: "{{ wtd_srv_haproxy_conf_stats.bind_port | default('8080') }}/tcp"
+    state: "{{ wtd_srv_haproxy_fw_state }}"
+    zone: "{{ wtd_srv_haproxy_fw_zone }}"
+    immediate: true
+    permanent: true
+  become: true
+  when:
+    - wtd_srv_haproxy_fw_mgmt | bool
+    - wtd_srv_haproxy_package_state != "absent"
+    - wtd_srv_haproxy_conf_stats.enabled | bool
+  tags:
+    - haproxy
+    - security
+    - firewall
+
+- name: Manage haproxy frontends FW Port
+  firewalld:
+    port: "{{ item.bind_port }}/tcp"
+    state: "{{ wtd_srv_haproxy_fw_state }}"
+    zone: "{{ wtd_srv_haproxy_fw_zone }}"
+    immediate: true
+    permanent: true
+  become: true
+  loop:
+    - wtd_srv_haproxy_conf_frontends
+  when:
+    - wtd_srv_haproxy_fw_mgmt | bool
+    - wtd_srv_haproxy_conf_frontends is defined
+    - wtd_srv_haproxy_package_state != "absent"
+  tags:
+    - haproxy
+    - security
+    - firewall
+
+- name: Manage haproxy listen FW Port
+  firewalld:
+    port: "{{ item.bind_port }}/tcp"
+    state: "{{ wtd_srv_haproxy_fw_state }}"
+    zone: "{{ wtd_srv_haproxy_fw_zone }}"
+    immediate: true
+    permanent: true
+  become: true
+  loop:
+    - wtd_srv_haproxy_conf_listens
+  when:
+    - wtd_srv_haproxy_fw_mgmt | bool
+    - wtd_srv_haproxy_conf_listens is defined
+    - wtd_srv_haproxy_package_state != "absent"
+  tags:
+    - haproxy
+    - security
+    - firewall

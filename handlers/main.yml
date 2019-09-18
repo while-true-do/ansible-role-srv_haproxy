@@ -1,0 +1,11 @@
+---
+# handlers file for while_true_do.srv_haproxy
+
+- name: Restart haproxy
+  service:
+    name: "{{ wtd_srv_haproxy_service }}"
+    state: "restarted"
+  become: true
+  tags:
+    - haproxy
+    - service

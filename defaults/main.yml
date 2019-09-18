@@ -1,0 +1,110 @@
+---
+# defaults file for while_true_do.srv_haproxy
+
+## Package Management
+wtd_srv_haproxy_package: "haproxy"
+# State can be present|latest|absent
+wtd_srv_haproxy_package_state: "present"
+
+## Configuration Management
+
+# Global Settings
+# The global settings configure parameters that apply to all servers running
+# HAProxy.
+wtd_srv_haproxy_conf_global:
+  log: "127.0.0.1 local2"
+  chroot: "/var/lib/haproxy"
+  pidfile: "/var/run/haproxy.pid"
+  maxconn: 4000
+  user: "haproxy"
+  group: "haproxy"
+  daemon: true
+
+# Default Settings
+# The default settings configure parameters that apply to all proxy subsections
+# in a configuration (frontend, backend, and listen).
+wtd_srv_haproxy_conf_defaults:
+  mode: "http"
+  log: "global"
+  options:
+    - httplog
+    - dontlognull
+    - "forwardfor except 127.0.0.0/8"
+    - redispatch
+  maxconn: 3000
+  retries: 3
+  timeout_http_request: "10s"
+  timeout_http_keep_alive: "10s"
+  timeout_connect: "10s"
+  timeout_queue: "60s"
+  timeout_client: "60s"
+  timeout_server: "60s"
+  timeout_check: "10s"
+
+# Stats Settings
+# The stats settings configure the statistics page for monitoring purposes.
+wtd_srv_haproxy_conf_stats:
+  enabled: false
+# bind_address: "*"
+# bind_port: "8080"
+# uri: "/haproxy?stats"
+# realm: "<optional realm name>"
+# auth: "<user>:<password>"
+# admin: false
+# refresh: "30s"
+# hide_version: true
+# show_desc: "<optional description>"
+# show_legends: false
+
+# Frontend Settings
+# The frontend settings configure the servers' listening sockets for client
+# connection requests.
+# wtd_srv_haproxy_conf_frontends:
+#   - name: ""
+#     bind_address: "*"
+#     bind_port: ""
+#     default_backend: ""
+
+# Backend Settings
+# The backend settings specify the real server IP addresses as well as the
+# load balancer scheduling algorithm.
+# wtd_srv_haproxy_conf_backends:
+#   - name: ""
+#     balance: "roundrobin"
+#     servers:
+#       - name: ""
+#         address: ""
+#         port: ""
+#         options: "check weight 1"
+
+# Listen Settings
+# The Listen settings configure a complete proxy (combination of frontend and
+# backend).
+# wtd_srv_haproxy_conf_listens:
+#   - name: ""
+#     bind_address: "*"
+#     bind_port: ""
+#     balance: "roundrobin"
+#     servers:
+#       - name: ""
+#         address: ""
+#         port: ""
+#         options: "check weight 1"
+
+## Service Management
+wtd_srv_haproxy_service: "haproxy"
+# State can be started|stopped
+wtd_srv_haproxy_service_state: "started"
+wtd_srv_haproxy_service_enabled: true
+
+## Firewalld Management
+wtd_srv_haproxy_fw_mgmt: true
+# Ports will be generated dynamically from
+# - wtd_srv_haproxy_conf_frontends
+# - wtd_srv_haproxy_conf_stats
+# - wtd_srv_haproxy_conf_listens
+wtd_srv_haproxy_fw_ports: []
+# State can be enabled|disabled
+wtd_srv_haproxy_fw_state: "enabled"
+# Zone can be according to defined zones on your machine.
+wtd_srv_haproxy_fw_zone: "public"

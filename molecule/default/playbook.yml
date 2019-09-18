@@ -1,0 +1,43 @@
+---
+- name: Converge
+  hosts: all
+  roles:
+    - role: while_true_do.srv_haproxy
+      wtd_srv_haproxy_conf_stats:
+        enabled: true
+        auth: "admin:password"
+      wtd_srv_haproxy_fw_mgmt: false
+      wtd_srv_haproxy_conf_frontends:
+        - name: "fe_app"
+          bind_address: "*"
+          bind_port: 80
+          default_backend: "be_app"
+        - name: "fe_app_2"
+          bind_address: "*"
+          bind_port: 8081
+          default_backend: "be_app"
+      wtd_srv_haproxy_conf_backends:
+        - name: "be_app"
+          servers:
+            - name: "app01"
+              address: "172.17.0.3"
+              port: 80
+            - name: "app02"
+              address: "172.17.0.4"
+              port: 80
+            - name: "app02"
+              address: "172.17.0.5"
+              port: 80
+              options: "check weight 1 backup"
+      wtd_srv_haproxy_conf_listens:
+        - name: "ls_admin"
+          bind_address: "*"
+          bind_port: 90
+          balance: "roundrobin"
+          servers:
+            - name: "admin01"
+              address: "172.17.0.11"
+              port: 80
+            - name: "admin02"
+              address: "172.17.0.12"
+              port: 80
