@@ -61,8 +61,7 @@
     immediate: true
     permanent: true
   become: true
-  loop:
-    - wtd_srv_haproxy_conf_frontends
+  loop: "{{ wtd_srv_haproxy_conf_frontends }}"
   when:
     - wtd_srv_haproxy_fw_mgmt | bool
     - wtd_srv_haproxy_conf_frontends is defined
@@ -72,6 +71,11 @@
     - security
     - firewall
 
+- debug:
+    msg: "{{ item.bind_port }}/tcp"
+  loop:
+    - wtd_srv_haproxy_conf_listens
+
 - name: Manage haproxy listen FW Port
   firewalld:
     port: "{{ item.bind_port }}/tcp"
@@ -80,8 +84,7 @@
     immediate: true
     permanent: true
   become: true
-  loop:
-    - wtd_srv_haproxy_conf_listens
+  loop: "{{ wtd_srv_haproxy_conf_listens }}"
   when:
     - wtd_srv_haproxy_fw_mgmt | bool
     - wtd_srv_haproxy_conf_listens is defined
