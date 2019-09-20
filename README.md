@@ -216,8 +216,8 @@ A load balancer with 2 frontends and enabled stats page.
   roles:
     - role: while_true_do.srv_haproxy
       wtd_srv_haproxy_conf_stats:
-        - enabled: true
-        - auth: "admin:myPassword%0815"
+        enabled: true
+        auth: "admin:myPassword%0815"
       wtd_srv_haproxy_conf_frontends:
         - name: "fe_blog"
           bind_address: "192.168.0.11"
