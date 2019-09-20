@@ -71,11 +71,6 @@
     - security
     - firewall
 
-- debug:
-    msg: "{{ item.bind_port }}/tcp"
-  loop:
-    - wtd_srv_haproxy_conf_listens
-
 - name: Manage haproxy listen FW Port
   firewalld:
     port: "{{ item.bind_port }}/tcp"
