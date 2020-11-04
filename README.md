@@ -194,7 +194,7 @@ A simple load balancer for 2 backends can be achieved with the below example.
 - hosts: all
   roles:
     - role: while_true_do.srv_haproxy
-      wtd_srv_haproxy_listens:
+      wtd_srv_haproxy_conf_listens:
         - name: "app"
           bind_address: "*"
           bind_port: "80"
