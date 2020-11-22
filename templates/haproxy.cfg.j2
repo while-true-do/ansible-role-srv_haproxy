@@ -77,6 +77,11 @@ listen stats
 {% for frontend in wtd_srv_haproxy_conf_frontends %}
 frontend {{ frontend.name }}
   bind {{ frontend.bind_address }}:{{ frontend.bind_port }}
+{% if frontend.options is defined %}
+{% for option in frontend.options %}
+  option {{ option }}
+{% endfor %}
+{% endif %}
   default_backend {{ frontend.default_backend }}
 
 {% endfor %}
@@ -89,6 +94,11 @@ frontend {{ frontend.name }}
 {% for backend in wtd_srv_haproxy_conf_backends %}
 backend {{ backend.name }}
   balance {{ backend.balance | default('roundrobin') }}
+{% if backend.options is defined %}
+{% for option in backend.options %}
+  option {{ option }}
+{% endfor %}
+{% endif %}
 {% for server in backend.servers %}
   server {{ server.name }} {{ server.address }}:{{ server.port }} {{ server.options | default('check weight 1') }}
 {% endfor %}
@@ -104,6 +114,11 @@ backend {{ backend.name }}
 frontend {{ listen.name }}
   bind {{ listen.bind_address }}:{{ listen.bind_port }}
   balance {{ listen.balance | default('roundrobin') }}
+{% if listen.options is defined %}
+{% for option in listen.options %}
+  option {{ option }}
+{% endfor %}
+{% endif %}
 {% for server in listen.servers %}
   server {{ server.name }} {{ server.address }}:{{ server.port }} {{ server.options | default('check weight 1') }}
 {% endfor %}
