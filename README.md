@@ -223,13 +223,16 @@ A load balancer with 2 frontends and enabled stats page.
           bind_address: "192.168.0.11"
           bind_port: "80"
           default_backend: "be_blog"
+          mode: http
         - name: "fe_shop"
           bind_address: "192.168.0.12"
           bind_port: "80"
           default_backend: "be_shop"
+          mode: http
       wtd_srv_haproxy_conf_backends:
         - name: "be_blog"
           balance: "roundrobin"
+          mode: http
           servers:
             - name: "blog01"
               address: "192.168.10.101"
@@ -239,6 +242,7 @@ A load balancer with 2 frontends and enabled stats page.
               port: "80"
         - name: "be_shop"
           balance: "roundrobin"
+          mode: http
           servers:
             - name: "shop01"
               address: "192.168.20.201"
