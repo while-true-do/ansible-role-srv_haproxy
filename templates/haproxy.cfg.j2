@@ -82,6 +82,9 @@ frontend {{ frontend.name }}
   option {{ option }}
 {% endfor %}
 {% endif %}
+{% if frontend.mode is defined %}
+  mode {{ frontend.mode }}
+{% endif %}
   default_backend {{ frontend.default_backend }}
 
 {% endfor %}
@@ -98,6 +101,9 @@ backend {{ backend.name }}
 {% for option in backend.options %}
   option {{ option }}
 {% endfor %}
+{% endif %}
+{% if backend.mode is defined %}
+  mode {{ backend.mode }}
 {% endif %}
 {% for server in backend.servers %}
   server {{ server.name }} {{ server.address }}:{{ server.port }} {{ server.options | default('check weight 1') }}
@@ -118,6 +124,9 @@ frontend {{ listen.name }}
 {% for option in listen.options %}
   option {{ option }}
 {% endfor %}
+{% endif %}
+{% if listen.mode is defined %}
+  mode {{ listen.mode }}
 {% endif %}
 {% for server in listen.servers %}
   server {{ server.name }} {{ server.address }}:{{ server.port }} {{ server.options | default('check weight 1') }}
